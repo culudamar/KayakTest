@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using FluentAssertions;
+using KayakTest.Util;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Edge;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
@@ -17,15 +11,11 @@ using TechTalk.SpecFlow;
 namespace KayakTest.Steps
 {
     [Binding]
-    public sealed class MainPageSteps
+    public sealed class MainPageSteps : StepBase
     {
-        // For additional details on SpecFlow step definitions see https://go.specflow.org/doc-stepdef
 
-        private readonly ScenarioContext _scenarioContext;
-
-        public MainPageSteps(ScenarioContext scenarioContext)
+        public MainPageSteps(ScenarioContext scenarioContext):base(scenarioContext)
         {
-            _scenarioContext = scenarioContext;
         }
 
         [Given(@"the main page is open")]
@@ -69,24 +59,6 @@ namespace KayakTest.Steps
             GetDriver().FindElementByLinkText("Stays").Click();
         }
 
-        private static void ClickChangingElement(IWebElement element)
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                try
-                {
-                    element.Click();
-                    return;
-                }
-                catch (StaleElementReferenceException)
-                {
-                    Console.WriteLine(element + " stale, try to click again..");
-                    Thread.Sleep(1000);
-                }
-            }
-            Console.WriteLine(element + " could not be clicked, don't give up!");
-        }
-
         [When(@"I select first tip")]
         public void WhenISelectFirstTip()
         {
@@ -100,7 +72,7 @@ namespace KayakTest.Steps
         public void WhenIHitSearchButton()
         {
             GetDriver()
-                //.FindElementByClassName("NbWx-button")
+                //.FindElementByClassName("NbWx-button") // didn't work for different drop-off
                 .FindElementByXPath("//*[@type='submit']")
                 .Click();
         }
@@ -108,7 +80,9 @@ namespace KayakTest.Steps
         [Then(@"I see error (.*)")]
         public void ThenISeeError(string errorMessage)
         {
-            GetDriver().FindElementByClassName("IGR4-error").Text.Should().Be(errorMessage);
+            var error = By.ClassName("IGR4-error");
+            new WebDriverWait(GetDriver(), TimeSpan.FromSeconds(10)).Until(ExpectedConditions.ElementIsVisible(error));
+            GetDriver().FindElement(error).Text.Should().Be(errorMessage);
         }
 
         [When(@"I select different drop-off")]
@@ -121,16 +95,6 @@ namespace KayakTest.Steps
             GetDriver().FindElement(differentDropOff).Click();
         }
 
-        private RemoteWebDriver GetDriver()
-        {
-            return _scenarioContext.Get<RemoteWebDriver>("driver");
-        }
-
-        [AfterScenario()]
-       public void AfterScenario()
-        {
-            GetDriver().Quit();
-        }
     }
 
 }
