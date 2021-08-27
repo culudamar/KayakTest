@@ -37,11 +37,6 @@ namespace KayakTest.Steps
 
         private static RemoteWebDriver CreateDriver()
         {
-            //if (File.Exists(tmpFilePath))
-            //{
-            //    var tmpFileContent = File.ReadAllText(tmpFilePath).Split();
-            //    return new ReuseRemoteWebDriver(new Uri(tmpFileContent[1]), tmpFileContent[0]);
-            //}
             var webDriver = new 
                 //EdgeDriver
                 ChromeDriver(@"C:\Users\culud\Downloads", new ChromeOptions(), TimeSpan.FromSeconds(120));//my laptop is too slow, giving timeouts for default command timeout
@@ -54,42 +49,7 @@ namespace KayakTest.Steps
             if (redirectLinks.Count > 0)
                 redirectLinks[0].Click();
 
-            //save driver info for the next debugging session:
-            File.WriteAllText(tmpFilePath, webDriver.SessionId + "\t" + GetExecutorURLFromDriver(webDriver).ToString());
-
             return webDriver;
-        }
-
-        private static string tmpFilePath = @"C:\temp\lastSeleniumSession.txt";
-
-        /// <summary>
-        /// Source: https://tarunlalwani.com/post/reusing-existing-browser-session-selenium-csharp/
-        /// </summary>
-        /// <param name="driver"></param>
-        /// <returns></returns>
-        public static Uri GetExecutorURLFromDriver(OpenQA.Selenium.Remote.RemoteWebDriver driver)
-        {
-            var executorField = typeof(OpenQA.Selenium.Remote.RemoteWebDriver)
-                .GetField("executor",
-                          System.Reflection.BindingFlags.NonPublic
-                          | System.Reflection.BindingFlags.Instance);
-
-            object executor = executorField.GetValue(driver);
-
-            var internalExecutorField = executor.GetType()
-                .GetField("internalExecutor",
-                          System.Reflection.BindingFlags.NonPublic
-                          | System.Reflection.BindingFlags.Instance);
-            object internalExecutor = internalExecutorField.GetValue(executor);
-
-            //executor.CommandInfoRepository
-            var remoteServerUriField = internalExecutor.GetType()
-                .GetField("remoteServerUri",
-                          System.Reflection.BindingFlags.NonPublic
-                          | System.Reflection.BindingFlags.Instance);
-            var remoteServerUri = remoteServerUriField.GetValue(internalExecutor) as Uri;
-
-            return remoteServerUri;
         }
 
         [When(@"I enter (.*) in From field")]
@@ -170,42 +130,7 @@ namespace KayakTest.Steps
        public void AfterScenario()
         {
             GetDriver().Quit();
-            File.Delete(tmpFilePath);
         }
     }
 
-    /// <summary>
-    /// Source: https://tarunlalwani.com/post/reusing-existing-browser-session-selenium-csharp/
-    /// </summary>
-    public class ReuseRemoteWebDriver : OpenQA.Selenium.Remote.RemoteWebDriver
-    {
-        private String _sessionId;
-
-        public ReuseRemoteWebDriver(Uri remoteAddress, String sessionId)
-            : base(remoteAddress, new OpenQA.Selenium.Remote.DesiredCapabilities())
-        {
-            this._sessionId = sessionId;
-            var sessionIdBase = this.GetType()
-                .BaseType
-                .GetField("sessionId",
-                          System.Reflection.BindingFlags.Instance |
-                          System.Reflection.BindingFlags.NonPublic);
-            sessionIdBase.SetValue(this, new OpenQA.Selenium.Remote.SessionId(sessionId));
-        }
-
-        protected override OpenQA.Selenium.Remote.Response
-            Execute(string driverCommandToExecute, System.Collections.Generic.Dictionary<string, object> parameters)
-        {
-            if (driverCommandToExecute == OpenQA.Selenium.Remote.DriverCommand.NewSession)
-            {
-                var resp = new OpenQA.Selenium.Remote.Response();
-                resp.Status = OpenQA.Selenium.WebDriverResult.Success;
-                resp.SessionId = this._sessionId;
-                resp.Value = new System.Collections.Generic.Dictionary<String, Object>();
-                return resp;
-            }
-            var respBase = base.Execute(driverCommandToExecute, parameters);
-            return respBase;
-        }
-    }
 }
