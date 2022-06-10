@@ -4,7 +4,8 @@
 @mytag
 Scenario: Simple search
 	Given the main page is open
-	When I enter Istanbul in From field
+	When I click Cars
+	And I enter Istanbul in From field
 	And I select first tip
 	And I hit search button
 	Then the result page should open

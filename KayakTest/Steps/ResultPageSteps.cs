@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using FluentAssertions;
 using KayakTest.Util;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using TechTalk.SpecFlow;
 
@@ -21,7 +22,7 @@ namespace KayakTest.Steps
         [Then(@"the result page should open")]
         public void ThenTheResultPageShouldOpen()
         {
-            var text = GetDriver().FindElementByXPath("//DIV[@class='EuxN-Taxes']").Text;
+            var text = GetDriver().FindElement(By.ClassName("EuxN-taxes")).Text;
             text.Should().Be("Total");
         }
     }

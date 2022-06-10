@@ -24,12 +24,11 @@ namespace KayakTest.Steps
             var webDriver = CreateDriver();
             _scenarioContext.Add("driver", webDriver);
         }
-
+        
         private static RemoteWebDriver CreateDriver()
         {
             var webDriver = new 
-                //EdgeDriver
-                ChromeDriver(@"C:\Users\culud\Downloads", new ChromeOptions(), TimeSpan.FromSeconds(120));//my laptop is too slow, giving timeouts for default command timeout
+                ChromeDriver(@"C:\temp", new ChromeOptions(), TimeSpan.FromSeconds(120));//my laptop is too slow, giving timeouts for default command timeout
             webDriver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(120);//probably my bad internet connection
             webDriver.Manage().Window.Maximize();
             webDriver.Navigate().GoToUrl("http://kayak.com");
@@ -45,7 +44,7 @@ namespace KayakTest.Steps
         [When(@"I enter (.*) in From field")]
         public void WhenIEnter_InFromField(string from)
         {
-            var fromField = GetDriver().FindElementByClassName("lNCO-inner");
+            var fromField = GetDriver().FindElementByClassName("k_my-input");
             ClickChangingElement(fromField);
 
             var textBox = By.ClassName("k_my-input");
@@ -53,16 +52,16 @@ namespace KayakTest.Steps
                 .SendKeys(from);
         }
 
-        [When(@"I click Stays")]
-        public void WhenIClickStays()
+        [When(@"I click (.*)")]
+        public void WhenIClickStays(string linkText)
         {
-            GetDriver().FindElementByLinkText("Stays").Click();
+            GetDriver().FindElementByLinkText(linkText).Click();
         }
 
         [When(@"I select first tip")]
         public void WhenISelectFirstTip()
         {
-            var firstTip = By.XPath("//DIV[@class='c8GSD-overlay-dropdown']//LI[2]");
+            var firstTip = By.ClassName("JyN0-picture");
             new WebDriverWait(GetDriver(), TimeSpan.FromSeconds(30)).Until(ExpectedConditions.ElementToBeClickable(firstTip))
                 .Click();
 
