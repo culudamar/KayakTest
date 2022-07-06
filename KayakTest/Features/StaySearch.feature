@@ -8,7 +8,7 @@ Scenario: Simple search
 	And I enter Istanbul in From field
 	And I select first tip
 	And I hit search button
-	Then the result page should open
+	Then the stay result page should open
 
 Scenario: No location
 	Given the main page is open
